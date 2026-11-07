@@ -83,3 +83,10 @@ returns
 ## Customizing
 - Colours: CSS variables at the top of `static/style.css`
 - Title / company name: `templates/index.html`
+
+
+## Rate tab (top-right switch: Weight | Rate)
+- Pipe Type + OD (or Side A / B) + Thickness -> **Kg / MTR** (same formulas as the Weight tab)
+- Add **Rate / Kg** -> **Rate / MTR** = Kg/MTR x Rate/Kg, and **Rate / Foot** = Rate/MTR / 3.281
+- Maths lives in `app.py -> calc_rate()`, endpoint `POST /api/rate`
+- Data typed in the Weight tab (pipe type, OD / Side A+B, Thickness) is fetched into the Rate tab automatically; just enter Rate / Kg

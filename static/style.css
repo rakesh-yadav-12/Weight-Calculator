@@ -105,14 +105,16 @@ body{margin:0;height:100vh;height:100dvh;display:flex;align-items:center;justify
 @media(max-width:860px){
   body{padding:8px}
   .panel{padding:16px 14px 16px;border-radius:16px}
-  .top{display:flex;justify-content:space-between;align-items:flex-start}
+  .top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start}
+  .tabs{order:-1;width:100%;margin-bottom:12px}
+  .tabs button{flex:1}
   .sec{margin-top:14px}
   .wrap{border:0;background:transparent;overflow-x:hidden;overflow-y:auto}
   .wc-tbl,.wc-tbl[data-view=round]{min-width:0}
   .wc-head{display:none}
   .wc-line,.wc-tbl[data-view=round] .wc-line{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end}
   .wc-data{padding:14px 12px;margin-bottom:12px;border:1px solid var(--ln);border-radius:16px;background:#fff;box-shadow:0 3px 10px #161b6610}
-  #wc-rows .wc-data:first-child{border-top:1px solid var(--ln)}
+  #wc-rows .wc-data:first-child,#rt-rows .wc-data:first-child{border-top:1px solid var(--ln)}
   .wc-data:before{content:"Pipe " counter(pc);grid-column:1/-1;font-size:13px;font-weight:700;color:var(--brand)}
   .wc-cell,.wc-cell:first-child{padding:0}
   .rs,.c-kgm,.c-wpp,.c-tot{border-left:0}
@@ -148,3 +150,24 @@ body{margin:0;height:100vh;height:100dvh;display:flex;align-items:center;justify
 .wc-head>div{background:var(--brand);box-shadow:none}
 @media(max-width:860px){.c-res::before{display:none}.c-res .lb{color:var(--rt)}}
 .wc-head small{display:block;margin-top:2px;font-size:10.5px;font-weight:500;opacity:.8}
+
+/* ---- tab switch (top right): Weight | Rate ---- */
+.tabs{justify-self:end;align-self:start;display:flex;gap:3px;padding:4px;border-radius:999px;background:var(--tint);border:1px solid var(--ln)}
+.tabs button{margin:0;padding:9px 24px;border:0;border-radius:999px;background:transparent;color:var(--muted);font:600 13px 'Poppins',sans-serif;cursor:pointer;transition:background .2s,color .2s,box-shadow .2s}
+.tabs button:hover{color:var(--brand)}
+.tabs button.is-on{background:linear-gradient(135deg,#3239b0,var(--brand));color:#fff;box-shadow:0 3px 8px #2a309840}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.view{display:flex;flex-direction:column;flex:0 1 auto;min-height:0}
+.view[hidden]{display:none}
+
+/* ---- Rate tab ---- */
+#rt-rows{counter-reset:pc}
+#rt-rows .wc-data:first-child{border-top:0}
+.fnote{font-size:12px;font-weight:600;line-height:1.6;color:var(--muted);text-align:right}
+@media(min-width:861px){
+  .rt-tbl{min-width:1100px}
+  .rt-tbl[data-view=round]{min-width:900px}
+  .rt-tbl .wc-line{grid-template-columns:1.45fr 1.05fr 1fr 1.1fr 1.05fr 1fr 1.05fr 1.15fr 1.15fr 100px}
+  .rt-tbl[data-view=round] .wc-line{grid-template-columns:1.45fr 1.05fr 1.05fr 1fr 1.05fr 1.15fr 1.15fr 100px}
+}
+@media(max-width:480px){.fnote{text-align:left}}

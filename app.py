@@ -18,6 +18,10 @@ Formula (exactly as given):
                       Kg/MTR x 6.00 => Weight/Pipe
 
     Total Weight   : Weight/Pipe x No. of Pipes
+
+Rate tab (see calc_rate below):
+    Kg/MTR x Rate/Kg  => Rate/MTR
+    Rate/MTR / 3.281  => Rate/Foot
 """
 import os
 from flask import Flask, render_template, request, jsonify
@@ -28,6 +32,7 @@ app = Flask(__name__)
 K = 0.0246615          # weight constant (mild steel)
 EQ = 0.6363             # converts (SideA + SideB) of a hollow section into an equivalent OD
 DEFAULT_LENGTH_M = 6.0  # standard pipe length used for Total Weight when Length is blank
+FT_PER_M = 3.281        # feet in one metre (Rate/MTR / 3.281 => Rate/Foot)
 
 
 def to_float(v):
@@ -94,10 +99,29 @@ def calc_weight(mode, od, a, b, t, length, nos):
         "mode": mode,
         "equivalent_od": round(eq_od, 2) if (mode == "hollow" and a and b) else None,
         "kg_per_metre": round(kg_per_m, 4),
+        "_kg_raw": kg_per_m,   # unrounded, used by calc_rate (removed before sending to the browser)
         "length_m": length or None,
         "weight_per_pipe": round(weight_per_pipe, 4) if weight_per_pipe is not None else None,
         "total_weight": round(total_weight, 4) if total_weight is not None else None,
     }
+
+
+def calc_rate(mode, od, a, b, t, rate_kg):
+    """
+    Rate tab:  Kg/MTR comes from calc_weight (same formulas as the Weight tab), then
+        Kg/MTR x Rate/Kg  => Rate/MTR
+        Rate/MTR / 3.281  => Rate/Foot
+    Rate/MTR and Rate/Foot appear as soon as Rate/Kg is entered.
+    """
+    r = calc_weight(mode, od, a, b, t, 0.0, 0)
+    kg = r.pop("_kg_raw")
+    rate_m = kg * rate_kg if (r["ok"] and rate_kg) else None
+    rate_ft = rate_m / FT_PER_M if rate_m is not None else None
+    r["rate_per_metre"] = round(rate_m, 4) if rate_m is not None else None
+    r["rate_per_foot"] = round(rate_ft, 4) if rate_ft is not None else None
+    for k in ("length_m", "weight_per_pipe", "total_weight"):
+        r.pop(k, None)
+    return r
 
 
 @app.after_request
@@ -125,7 +149,20 @@ def api_calculate():
     nos = to_int(data.get("nos"))
 
     result = calc_weight(mode, od, a, b, t, length, nos)
+    result.pop("_kg_raw", None)
     return jsonify(result)
+
+
+@app.post("/api/rate")
+def api_rate():
+    data = request.get_json(silent=True) or {}
+    mode = "hollow" if data.get("mode") == "hollow" else "round"
+    od = to_float(data.get("od"))
+    a = to_float(data.get("a"))
+    b = to_float(data.get("b"))
+    t = to_float(data.get("t"))
+    rate_kg = to_float(data.get("rate"))
+    return jsonify(calc_rate(mode, od, a, b, t, rate_kg))
 
 
 @app.get("/healthz")
