@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pipe Weight Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i></div>
+<main class="panel">
+
+  <header class="top">
+    <div class="ttl">
+      <h1>Pipe Weight Calculator</h1>
+      <div class="rule" aria-hidden="true"></div>
+      <small>Official tool by <b>Shreeji</b> SteelTubes Pvt. Ltd.</small>
+    </div>
+    <div class="art">
+      <svg id="art-round" viewBox="52 14 154 98" role="img" aria-label="Round pipe">
+        <defs>
+          <linearGradient id="rb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f5fb"/><stop offset=".45" stop-color="#c9cee6"/><stop offset="1" stop-color="#8f97c4"/></linearGradient>
+          <linearGradient id="rh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a418f"/><stop offset="1" stop-color="#0f1450"/></linearGradient>
+        </defs>
+        <ellipse cx="129" cy="102" rx="72" ry="5" fill="#161b66" opacity=".12"/>
+        <path d="M70 20H188A13 35 0 0 1 188 90H70Z" fill="url(#rb)" stroke="#161b66" stroke-width="2.5" stroke-linejoin="round"/>
+        <rect x="136" y="21" width="11" height="68" fill="#f47c34"/>
+        <rect x="154" y="21" width="5" height="68" fill="#f47c34" opacity=".85"/>
+        <rect x="76" y="29" width="108" height="7" rx="3.5" fill="#fff" opacity=".55"/>
+        <ellipse cx="70" cy="55" rx="13" ry="35" fill="#dfe3f3" stroke="#161b66" stroke-width="2.5"/>
+        <ellipse cx="70" cy="55" rx="8.5" ry="28" fill="url(#rh)"/>
+      </svg>
+      <svg id="art-hollow" class="off" viewBox="64 14 150 98" role="img" aria-label="Hollow section">
+        <defs>
+          <linearGradient id="hr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#aab1d6"/><stop offset="1" stop-color="#7d85b4"/></linearGradient>
+          <linearGradient id="hh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a418f"/><stop offset="1" stop-color="#0f1450"/></linearGradient>
+        </defs>
+        <ellipse cx="139" cy="104" rx="72" ry="5" fill="#161b66" opacity=".12"/>
+        <g transform="translate(10 4)" stroke="#161b66" stroke-width="2.5" stroke-linejoin="round">
+          <polygon points="60,36 150,16 198,16 108,36" fill="#e6e9f6"/>
+          <polygon points="108,36 198,16 198,64 108,84" fill="url(#hr)"/>
+          <polygon points="91.5,29 139.5,29 153,26 105,26" fill="#f47c34" stroke="none"/>
+          <polygon points="139.5,29 153,26 153,74 139.5,77" fill="#f47c34" stroke="none"/>
+          <rect x="60" y="36" width="48" height="48" fill="#d3d8ee"/>
+          <rect x="68" y="44" width="32" height="32" fill="url(#hh)" stroke-width="2"/>
+        </g>
+      </svg>
+      <div class="art-cap" id="hero-cap">Round Pipe</div>
+    </div>
+  </header>
+
+  <h2 class="sec">Pipe Requirement</h2>
+  <div class="wrap" id="wc-scroll">
+    <div class="wc-tbl" id="wc-tbl" data-view="round">
+      <div class="wc-line wc-head">
+        <div>Pipe Type *</div>
+        <div id="h-a">OD (mm) *</div>
+        <div class="c-b" id="h-b">Side B (mm) *</div>
+        <div class="c-eq rs">OD (mm)<br><small>(A + B) × 0.6363</small></div>
+        <div>Thickness (mm) *</div>
+        <div class="c-kgm">Kg / MTR</div>
+        <div>Length (m)</div>
+        <div class="c-wpp">Weight / Pipe (kg)</div>
+        <div>No. of Pipes</div>
+        <div class="c-tot">Total Weight (kg)</div>
+        <div></div>
+      </div>
+      <div id="wc-rows"></div>
+    </div>
+  </div>
+
+  <footer class="bot">
+    <button type="button" class="pill" id="wc-clr" title="Clear everything and start again">Reset</button>
+    <div class="gt" aria-live="polite">
+      <div><div class="gt-l">Grand Total</div><div class="gt-n" id="wc-gpcs">0 pipes</div></div>
+      <div class="gt-v"><b id="wc-grand">0.00</b> kg</div>
+    </div>
+  </footer>
+</main>
+
+<template id="wc-row-tpl">
+  <div class="wc-line wc-data is-round">
+    <div class="wc-cell c-type"><span class="lb">Pipe Type</span>
+      <input type="hidden" class="f-mode" value="round">
+      <div class="wc-tog" role="group" aria-label="Pipe type">
+        <button type="button" class="is-on" data-v="round" aria-pressed="true">Round</button>
+        <button type="button" data-v="hollow" aria-pressed="false" title="Hollow Section (SHS / RHS)">Hollow</button>
+      </div></div>
+    <div class="wc-cell"><span class="lb t-a">OD (mm)</span><input class="f-a" inputmode="decimal" autocomplete="off" placeholder="e.g. 60"></div>
+    <div class="wc-cell c-b"><span class="lb">Side B (mm)</span><input class="f-b" inputmode="decimal" autocomplete="off" placeholder="e.g. 20"></div>
+    <div class="wc-cell c-res c-eq rs"><span class="lb">OD (mm)</span><div class="wc-res r-eq empty">—</div></div>
+    <div class="wc-cell"><span class="lb">Thickness (mm)</span><input class="f-t" inputmode="decimal" autocomplete="off" placeholder="e.g. 3.2"></div>
+    <div class="wc-cell c-res c-kgm"><span class="lb">Kg / MTR</span><div class="wc-res r-kgm empty">—</div></div>
+    <div class="wc-cell"><span class="lb">Length (m)</span><input class="f-l" inputmode="decimal" autocomplete="off" placeholder="6.00"></div>
+    <div class="wc-cell c-res c-wpp"><span class="lb">Weight / Pipe (kg)</span><div class="wc-res r-wpp empty">—</div></div>
+    <div class="wc-cell"><span class="lb">No. of Pipes</span><input class="f-n" inputmode="numeric" autocomplete="off" placeholder="e.g. 10"></div>
+    <div class="wc-cell c-res c-tot"><span class="lb">Total Weight (kg)</span><div class="wc-res wc-res-tot r-tot empty">—</div></div>
+    <div class="wc-cell c-act">
+      <button type="button" class="b-add" title="Add another pipe below" aria-label="Add pipe">+</button>
+      <button type="button" class="b-del" title="Remove this pipe" aria-label="Remove pipe">&#10005;</button>
+    </div>
+    <div class="wc-msg"></div>
+  </div>
+</template>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
