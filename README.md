@@ -4,6 +4,12 @@
 <img width="1896" height="924" alt="image" src="https://github.com/user-attachments/assets/1afc3362-9ab1-4370-8d8f-86ae03b15380" />
 # 2.
 <img width="1885" height="911" alt="image" src="https://github.com/user-attachments/assets/f5b18726-fe21-481f-bbd1-6cff0bcdaf04" />
+#
+<img width="1207" height="278" alt="image" src="https://github.com/user-attachments/assets/22e064be-2d17-4a97-a7f7-682461e1f55a" />
+#
+<img width="1238" height="425" alt="image" src="https://github.com/user-attachments/assets/674b5218-9371-4933-9f85-6fffe0d59be6" />
+
+
 
 
 # Pipe Weight Calculator
