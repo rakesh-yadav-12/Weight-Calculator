@@ -106,3 +106,6 @@ returns
 The "service is waking up" screen on the first visit is Render's free web service waking from sleep.
 Because the page no longer needs the server to calculate, deploy it as a **Static Site** (never sleeps, served from CDN):
 Render -> New + -> Static Site -> pick this repo -> Build Command: *(empty)* -> Publish Directory: `public`.
+
+## Official Hosted link :-
+https://shreeji-steeltubes-pvt-ltd-jws6.onrender.com/
