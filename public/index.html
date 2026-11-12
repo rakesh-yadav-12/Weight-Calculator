@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pipe Weight Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+<style>*{box-sizing:border-box}
+:root{--brand:#2a3098;--brand-dk:#1d2275;--accent:#f47c34;--ln:#d9dcf0;--ph:#a3a8c4;--muted:#6b7090;--ink:#262b6b;--red:#d6455d;--tint:#f1f2fb}
+html,body{height:100%;overflow:hidden}
+body{margin:0;height:100vh;height:100dvh;display:flex;align-items:center;justify-content:center;color:var(--ink);background:#e9edfb;
+  font-family:'Poppins',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+
+/* colour background: static gradients (same look, no heavy animated blur = smooth on phones) */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 0% 0%,#f47c3499 0,#f47c3400 42%),
+    radial-gradient(circle at 100% 0%,#3b5bdb99 0,#3b5bdb00 42%),
+    radial-gradient(circle at 12% 100%,#4cc3ff99 0,#4cc3ff00 42%),
+    radial-gradient(circle at 100% 100%,#7c5cff99 0,#7c5cff00 42%),
+    #e9edfb}
+
+/* panel */
+.panel{position:relative;z-index:1;display:flex;flex-direction:column;width:min(1240px,100%);max-height:100%;padding:24px 28px 26px;
+  background:#fffffff2;border:1px solid #ffffffb0;border-radius:18px;box-shadow:0 24px 60px #161b6633;overflow:hidden}
+
+/* title row */
+.top{flex:none;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}
+.ttl h1{margin:0;font-size:clamp(22px,3.4vw,30px);font-weight:700;color:var(--brand);letter-spacing:-.2px}
+.rule{position:relative;width:150px;height:1px;margin:10px 0 7px;background:var(--ln)}
+.rule:before{content:"";position:absolute;left:0;top:-1px;width:54px;height:3px;border-radius:3px;background:var(--accent)}
+.ttl small{display:block;font-size:12px;font-weight:600;color:var(--brand)}
+.ttl small b{color:var(--accent)}
+.art{flex:none;text-align:center}
+.art svg{display:block;width:auto;height:clamp(52px,10vh,84px);margin:0 auto;animation:pop .35s ease-out}
+.art svg.off{display:none}
+.art-cap{display:inline-block;margin-top:2px;padding:2px 12px;border-radius:999px;background:var(--tint);color:var(--brand);font-size:11px;font-weight:700}
+@keyframes pop{from{transform:translateY(6px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+
+.sec{flex:none;margin:20px 0 10px;font-size:16px;font-weight:700;color:var(--brand)}
+
+/* table: indigo header bar + white rows (like the enquiry form) */
+.wrap{flex:0 1 auto;min-height:0;overflow:auto;border:1px solid var(--ln);border-radius:12px;background:#fff;scrollbar-width:thin;scrollbar-color:#b9bde0 transparent}
+.wrap::-webkit-scrollbar{width:9px;height:9px}
+.wrap::-webkit-scrollbar-thumb{background:#b9bde0;border-radius:9px;border:2px solid #fff}
+.wc-tbl{min-width:1180px}
+.wc-tbl[data-view=round]{min-width:980px}
+.wc-line{display:grid;grid-template-columns:1.45fr 1.05fr 1fr 1.1fr 1.05fr 1fr .85fr 1.1fr 1fr 1.15fr 100px;align-items:start}
+.wc-tbl[data-view=round] .wc-line{grid-template-columns:1.45fr 1.05fr 1.05fr 1fr .85fr 1.1fr 1fr 1.15fr 100px}
+.wc-tbl[data-view=round] .c-b,.wc-tbl[data-view=round] .c-eq{display:none}
+.wc-head{position:sticky;top:0;z-index:2;background:var(--brand);color:#fff;font-size:13px;font-weight:700;line-height:1.25}
+.wc-head>div{padding:15px 10px}
+.wc-head .rs,.wc-head .c-kgm,.wc-head .c-wpp,.wc-head .c-tot{border-left:1px solid #ffffff44}
+.c-kgm,.c-wpp,.c-tot{border-left:1px solid var(--ln)}
+
+.wc-data{counter-increment:pc;border-top:1px solid var(--ln)}
+#wc-rows{counter-reset:pc}
+#wc-rows .wc-data:first-child{border-top:0}
+.wc-cell{padding:14px 6px;min-width:0}
+.wc-cell:first-child{padding-left:12px}
+.rs{border-left:1px solid var(--ln)}
+.lb{display:none}
+
+.wc-data input:not([type=hidden]){display:block;width:100%;height:44px;padding:0 14px;font:500 14px 'Poppins',sans-serif;color:var(--ink);background:#fff;border:1px solid var(--ln);border-radius:14px;transition:border-color .2s,box-shadow .2s}
+.wc-data input::placeholder{color:var(--ph)}
+.wc-data input:focus{outline:0;border-color:var(--brand);box-shadow:0 0 0 3px #2a309824}
+
+/* pill toggle */
+.wc-tog{display:flex;gap:2px;height:44px;padding:3px;border-radius:999px;background:var(--tint);border:1px solid var(--ln)}
+.wc-tog button{flex:1 1 0;min-width:0;margin:0;padding:0 8px;border:0;border-radius:999px;background:transparent;color:var(--muted);font:600 13px 'Poppins',sans-serif;cursor:pointer;transition:background .2s,color .2s,box-shadow .2s}
+.wc-tog button:hover{color:var(--brand)}
+.wc-tog button.is-on{background:linear-gradient(135deg,#3239b0,var(--brand));color:#fff;box-shadow:0 3px 8px #2a309840}
+.wc-tog button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* result cells */
+.wc-res{height:44px;display:flex;align-items:center;padding:0 14px;border-radius:14px;background:var(--tint);color:var(--brand);font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}
+.wc-res.empty{color:var(--ph);font-weight:500}
+.wc-res-tot{background:#fff6ef;border:1.5px solid var(--accent);color:var(--brand-dk)}
+.wc-res-tot.empty{background:var(--tint);border-color:transparent;color:var(--ph)}
+
+/* + and x buttons */
+.c-act{display:flex;gap:8px;justify-content:flex-end;padding-right:12px}
+.b-add,.b-del{width:42px;height:44px;margin:0;border-radius:11px;font-family:'Poppins',sans-serif;cursor:pointer;transition:filter .2s,background .2s,transform .15s}
+.b-add{border:0;background:var(--brand);color:#fff;font-size:22px;line-height:1;font-weight:500}
+.b-add:hover{filter:brightness(1.2)}
+.b-del{border:1px solid #efc1ca;background:#fff;color:var(--red);font-size:15px}
+.b-del:hover{background:#fdf0f2}
+.b-add:active,.b-del:active{transform:scale(.95)}
+.b-add:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.b-del:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+.wc-msg{grid-column:1/-1;padding:0 14px 12px;font-size:12px;font-weight:600;color:var(--red)}
+.wc-msg:empty{display:none}
+
+/* bottom: big pill + grand total */
+.bot{flex:none;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:22px}
+.pill{margin:0;padding:17px 46px;border:0;border-radius:999px;background:var(--brand);color:#fff;font:700 15px 'Poppins',sans-serif;letter-spacing:1px;text-transform:uppercase;cursor:pointer;box-shadow:0 8px 20px #2a309840;transition:filter .2s,transform .15s}
+.pill:hover{filter:brightness(1.18)}
+.pill:active{transform:scale(.97)}
+.pill:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.gt{display:flex;align-items:center;gap:26px;padding:10px 20px;border:1px solid var(--ln);border-left:4px solid var(--accent);border-radius:14px;background:#fff}
+.gt-l{font-size:14px;font-weight:700;color:var(--brand)}
+.gt-n{font-size:11.5px;font-weight:500;color:var(--muted)}
+.gt-v{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.gt-v b{margin-right:3px;font-size:clamp(22px,5vw,28px);font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
+
+/* responsive: tablets / phones -> every pipe becomes a labelled card */
+@media(max-width:860px){
+  body{padding:8px}
+  .panel{padding:16px 14px 16px;border-radius:16px}
+  .top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start}
+  .tabs{order:-1;width:100%;margin-bottom:12px}
+  .tabs button{flex:1}
+  .sec{margin-top:14px}
+  .wrap{border:0;background:transparent;overflow-x:hidden;overflow-y:auto}
+  .wc-tbl,.wc-tbl[data-view=round]{min-width:0}
+  .wc-head{display:none}
+  .wc-line,.wc-tbl[data-view=round] .wc-line{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end}
+  .wc-data{padding:14px 12px;margin-bottom:12px;border:1px solid var(--ln);border-radius:16px;background:#fff;box-shadow:0 3px 10px #161b6610}
+  #wc-rows .wc-data:first-child,#rt-rows .wc-data:first-child{border-top:1px solid var(--ln)}
+  .wc-data:before{content:"Pipe " counter(pc);grid-column:1/-1;font-size:13px;font-weight:700;color:var(--brand)}
+  .wc-cell,.wc-cell:first-child{padding:0}
+  .rs,.c-kgm,.c-wpp,.c-tot{border-left:0}
+  .lb{display:block;margin-bottom:4px;font-size:11.5px;font-weight:600;color:var(--brand)}
+  .c-type,.c-act{grid-column:1/-1}
+  .c-act{justify-content:flex-end;padding:0}
+  .wc-msg{padding:0}
+  .bot{margin-top:14px}
+  .pill{padding:14px 34px}
+}
+@media(max-width:480px){
+  .art svg{height:50px}
+  .art-cap{display:none}
+  .bot{flex-direction:column-reverse;align-items:stretch}
+  .pill{width:100%}
+  .gt{justify-content:space-between}
+}
+@media(max-height:640px){.art,.ttl small{display:none}.rule{margin:7px 0 0}.sec{margin-top:10px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---- result columns: one calm navy header, a thin colour accent per result, soft tinted value boxes ---- */
+.c-res{position:relative;--rc:#2a3098;--rbg:#f1f2fb;--rt:#2a3098}
+.c-res::before{content:"\279C";position:absolute;left:-1px;top:36px;transform:translate(-50%,-50%);z-index:1;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--rc);color:#fff;font-size:10px;line-height:1;box-shadow:0 0 0 3px #fff}
+.c-kgm{--rc:#0f8a5f;--rbg:#eaf6f1;--rt:#0b6b49}
+.c-wpp{--rc:#2f6fbf;--rbg:#eaf1fa;--rt:#24578f}
+.c-tot{--rc:#e0782b;--rbg:#fdf3ea;--rt:#8a4210}
+.c-eq{--rc:#6b4fb8;--rbg:#f1eefa;--rt:#53399a}
+.c-res .wc-res{background:var(--rbg);border:1px solid color-mix(in srgb,var(--rc) 45%,#fff);color:var(--rt)}
+.c-res .wc-res.empty{background:#f6f7fc;border-color:transparent;color:var(--ph)}
+.c-tot .wc-res-tot{border-width:1.5px;border-color:var(--rc);color:var(--rt)}
+.c-tot .wc-res-tot.empty{border-width:1px;border-color:transparent}
+/* header: one single colour across the whole row */
+.wc-head>div{background:var(--brand);box-shadow:none}
+@media(max-width:860px){.c-res::before{display:none}.c-res .lb{color:var(--rt)}}
+.wc-head small{display:block;margin-top:2px;font-size:10.5px;font-weight:500;opacity:.8}
+
+/* ---- tab switch (top right): Weight | Rate ---- */
+.tabs{justify-self:end;align-self:start;display:flex;gap:3px;padding:4px;border-radius:999px;background:var(--tint);border:1px solid var(--ln)}
+.tabs button{margin:0;padding:9px 24px;border:0;border-radius:999px;background:transparent;color:var(--muted);font:600 13px 'Poppins',sans-serif;cursor:pointer;transition:background .2s,color .2s,box-shadow .2s}
+.tabs button:hover{color:var(--brand)}
+.tabs button.is-on{background:linear-gradient(135deg,#3239b0,var(--brand));color:#fff;box-shadow:0 3px 8px #2a309840}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.view{display:flex;flex-direction:column;flex:0 1 auto;min-height:0}
+.view[hidden]{display:none}
+
+/* ---- Rate tab ---- */
+#rt-rows{counter-reset:pc}
+#rt-rows .wc-data:first-child{border-top:0}
+.fnote{font-size:12px;font-weight:600;line-height:1.6;color:var(--muted);text-align:right}
+@media(min-width:861px){
+  .rt-tbl{min-width:1100px}
+  .rt-tbl[data-view=round]{min-width:900px}
+  .rt-tbl .wc-line{grid-template-columns:1.45fr 1.05fr 1fr 1.1fr 1.05fr 1fr 1.05fr 1.15fr 1.15fr 100px}
+  .rt-tbl[data-view=round] .wc-line{grid-template-columns:1.45fr 1.05fr 1.05fr 1fr 1.05fr 1.15fr 1.15fr 100px}
+}
+@media(max-width:480px){.fnote{text-align:left}}</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+<main class="panel">
+
+  <header class="top">
+    <div class="ttl">
+      <h1 id="ttl-h1">Pipe Weight Calculator</h1>
+      <div class="rule" aria-hidden="true"></div>
+      <small>Official tool by <b>Shreeji</b> SteelTubes Pvt. Ltd.</small>
+    </div>
+    <div class="art">
+      <svg id="art-round" viewBox="52 14 154 98" role="img" aria-label="Round pipe">
+        <defs>
+          <linearGradient id="rb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f5fb"/><stop offset=".45" stop-color="#c9cee6"/><stop offset="1" stop-color="#8f97c4"/></linearGradient>
+          <linearGradient id="rh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a418f"/><stop offset="1" stop-color="#0f1450"/></linearGradient>
+        </defs>
+        <ellipse cx="129" cy="102" rx="72" ry="5" fill="#161b66" opacity=".12"/>
+        <path d="M70 20H188A13 35 0 0 1 188 90H70Z" fill="url(#rb)" stroke="#161b66" stroke-width="2.5" stroke-linejoin="round"/>
+        <rect x="136" y="21" width="11" height="68" fill="#f47c34"/>
+        <rect x="154" y="21" width="5" height="68" fill="#f47c34" opacity=".85"/>
+        <rect x="76" y="29" width="108" height="7" rx="3.5" fill="#fff" opacity=".55"/>
+        <ellipse cx="70" cy="55" rx="13" ry="35" fill="#dfe3f3" stroke="#161b66" stroke-width="2.5"/>
+        <ellipse cx="70" cy="55" rx="8.5" ry="28" fill="url(#rh)"/>
+      </svg>
+      <svg id="art-hollow" class="off" viewBox="64 14 150 98" role="img" aria-label="Hollow section">
+        <defs>
+          <linearGradient id="hr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#aab1d6"/><stop offset="1" stop-color="#7d85b4"/></linearGradient>
+          <linearGradient id="hh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a418f"/><stop offset="1" stop-color="#0f1450"/></linearGradient>
+        </defs>
+        <ellipse cx="139" cy="104" rx="72" ry="5" fill="#161b66" opacity=".12"/>
+        <g transform="translate(10 4)" stroke="#161b66" stroke-width="2.5" stroke-linejoin="round">
+          <polygon points="60,36 150,16 198,16 108,36" fill="#e6e9f6"/>
+          <polygon points="108,36 198,16 198,64 108,84" fill="url(#hr)"/>
+          <polygon points="91.5,29 139.5,29 153,26 105,26" fill="#f47c34" stroke="none"/>
+          <polygon points="139.5,29 153,26 153,74 139.5,77" fill="#f47c34" stroke="none"/>
+          <rect x="60" y="36" width="48" height="48" fill="#d3d8ee"/>
+          <rect x="68" y="44" width="32" height="32" fill="url(#hh)" stroke-width="2"/>
+        </g>
+      </svg>
+      <div class="art-cap" id="hero-cap">Round Pipe</div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Choose calculator">
+      <button type="button" role="tab" class="is-on" id="tab-weight" data-tab="weight" aria-selected="true" aria-controls="view-weight" title="Pipe weight calculator">Weight</button>
+      <button type="button" role="tab" id="tab-rate" data-tab="rate" aria-selected="false" aria-controls="view-rate" title="Pipe rate calculator">Rate</button>
+    </nav>
+  </header>
+
+  <section class="view" id="view-weight" role="tabpanel" aria-labelledby="tab-weight">
+  <h2 class="sec">Pipe Requirement</h2>
+  <div class="wrap" id="wc-scroll">
+    <div class="wc-tbl" id="wc-tbl" data-view="round">
+      <div class="wc-line wc-head">
+        <div>Pipe Type *</div>
+        <div id="h-a">OD (mm) *</div>
+        <div class="c-b" id="h-b">Side B (mm) *</div>
+        <div class="c-eq rs">OD (mm)<br><small>(A + B) × 0.6363</small></div>
+        <div>Thickness (mm) *</div>
+        <div class="c-kgm">Kg / MTR</div>
+        <div>Length (m)</div>
+        <div class="c-wpp">Weight / Pipe (kg)</div>
+        <div>No. of Pipes</div>
+        <div class="c-tot">Total Weight (kg)</div>
+        <div></div>
+      </div>
+      <div id="wc-rows"></div>
+    </div>
+  </div>
+
+  <footer class="bot">
+    <button type="button" class="pill" id="wc-clr" title="Clear everything and start again">Reset</button>
+    <div class="gt" aria-live="polite">
+      <div><div class="gt-l">Grand Total</div><div class="gt-n" id="wc-gpcs">0 pipes</div></div>
+      <div class="gt-v"><b id="wc-grand">0.00</b> kg</div>
+    </div>
+  </footer>
+  </section>
+
+  <section class="view" id="view-rate" role="tabpanel" aria-labelledby="tab-rate" hidden>
+  <h2 class="sec">Rate Calculation</h2>
+  <div class="wrap">
+    <div class="wc-tbl rt-tbl" id="rt-tbl" data-view="round">
+      <div class="wc-line wc-head">
+        <div>Pipe Type *</div>
+        <div id="rh-a">OD (mm) *</div>
+        <div class="c-b" id="rh-b">Side B (mm) *</div>
+        <div class="c-eq rs">OD (mm)<br><small>(A + B) × 0.6363</small></div>
+        <div>Thickness (mm) *</div>
+        <div class="c-kgm">Kg / MTR</div>
+        <div>Rate / Kg (&#8377;) *</div>
+        <div class="c-wpp">Rate / MTR (&#8377;)<br><small>Kg/MTR × Rate/Kg</small></div>
+        <div class="c-tot">Rate / Foot (&#8377;)<br><small>Rate/MTR ÷ 3.281</small></div>
+        <div></div>
+      </div>
+      <div id="rt-rows"></div>
+    </div>
+  </div>
+
+  <footer class="bot">
+    <button type="button" class="pill" id="rt-clr" title="Clear everything and start again">Reset</button>
+    <div class="fnote">Rate / MTR = Kg / MTR × Rate / Kg<br>Rate / Foot = Rate / MTR ÷ 3.281</div>
+  </footer>
+  </section>
+</main>
+
+<template id="wc-row-tpl">
+  <div class="wc-line wc-data is-round">
+    <div class="wc-cell c-type"><span class="lb">Pipe Type</span>
+      <input type="hidden" class="f-mode" value="round">
+      <div class="wc-tog" role="group" aria-label="Pipe type">
+        <button type="button" class="is-on" data-v="round" aria-pressed="true">Round</button>
+        <button type="button" data-v="hollow" aria-pressed="false" title="Hollow Section (SHS / RHS)">Hollow</button>
+      </div></div>
+    <div class="wc-cell"><span class="lb t-a">OD (mm)</span><input class="f-a" inputmode="decimal" autocomplete="off" placeholder="e.g. 60"></div>
+    <div class="wc-cell c-b"><span class="lb">Side B (mm)</span><input class="f-b" inputmode="decimal" autocomplete="off" placeholder="e.g. 20"></div>
+    <div class="wc-cell c-res c-eq rs"><span class="lb">OD (mm)</span><div class="wc-res r-eq empty">—</div></div>
+    <div class="wc-cell"><span class="lb">Thickness (mm)</span><input class="f-t" inputmode="decimal" autocomplete="off" placeholder="e.g. 3.2"></div>
+    <div class="wc-cell c-res c-kgm"><span class="lb">Kg / MTR</span><div class="wc-res r-kgm empty">—</div></div>
+    <div class="wc-cell"><span class="lb">Length (m)</span><input class="f-l" inputmode="decimal" autocomplete="off" placeholder="6.00"></div>
+    <div class="wc-cell c-res c-wpp"><span class="lb">Weight / Pipe (kg)</span><div class="wc-res r-wpp empty">—</div></div>
+    <div class="wc-cell"><span class="lb">No. of Pipes</span><input class="f-n" inputmode="numeric" autocomplete="off" placeholder="e.g. 10"></div>
+    <div class="wc-cell c-res c-tot"><span class="lb">Total Weight (kg)</span><div class="wc-res wc-res-tot r-tot empty">—</div></div>
+    <div class="wc-cell c-act">
+      <button type="button" class="b-add" title="Add another pipe below" aria-label="Add pipe">+</button>
+      <button type="button" class="b-del" title="Remove this pipe" aria-label="Remove pipe">&#10005;</button>
+    </div>
+    <div class="wc-msg"></div>
+  </div>
+</template>
+<template id="rt-row-tpl">
+  <div class="wc-line wc-data is-round">
+    <div class="wc-cell c-type"><span class="lb">Pipe Type</span>
+      <input type="hidden" class="f-mode" value="round">
+      <div class="wc-tog" role="group" aria-label="Pipe type">
+        <button type="button" class="is-on" data-v="round" aria-pressed="true">Round</button>
+        <button type="button" data-v="hollow" aria-pressed="false" title="Hollow Section (SHS / RHS)">Hollow</button>
+      </div></div>
+    <div class="wc-cell"><span class="lb t-a">OD (mm)</span><input class="f-a" inputmode="decimal" autocomplete="off" placeholder="e.g. 60"></div>
+    <div class="wc-cell c-b"><span class="lb">Side B (mm)</span><input class="f-b" inputmode="decimal" autocomplete="off" placeholder="e.g. 20"></div>
+    <div class="wc-cell c-res c-eq rs"><span class="lb">OD (mm)</span><div class="wc-res r-eq empty">—</div></div>
+    <div class="wc-cell"><span class="lb">Thickness (mm)</span><input class="f-t" inputmode="decimal" autocomplete="off" placeholder="e.g. 3.2"></div>
+    <div class="wc-cell c-res c-kgm"><span class="lb">Kg / MTR</span><div class="wc-res r-kgm empty">—</div></div>
+    <div class="wc-cell"><span class="lb">Rate / Kg (&#8377;)</span><input class="f-r" inputmode="decimal" autocomplete="off" placeholder="e.g. 85"></div>
+    <div class="wc-cell c-res c-wpp"><span class="lb">Rate / MTR (&#8377;)</span><div class="wc-res r-rm empty">—</div></div>
+    <div class="wc-cell c-res c-tot"><span class="lb">Rate / Foot (&#8377;)</span><div class="wc-res wc-res-tot r-rf empty">—</div></div>
+    <div class="wc-cell c-act">
+      <button type="button" class="b-add" title="Add another pipe below" aria-label="Add pipe">+</button>
+      <button type="button" class="b-del" title="Remove this pipe" aria-label="Remove pipe">&#10005;</button>
+    </div>
+    <div class="wc-msg"></div>
+  </div>
+</template>
+<script>/* Calculation runs right here in the browser = instant results, no server round-trip.
+   Formulas are identical to app.py (calc_weight / calc_rate), which is kept as a backup API. */
+const K = 0.0246615, EQ = 0.6363, DEF_LEN = 6, FT = 3.281;
+const num = v => { const n = parseFloat(String(v).replace(',', '.')); return n > 0 ? n : 0; };
+const whole = v => { const n = parseFloat(String(v).replace(',', '.')); return n > 0 ? Math.trunc(n) : 0; };
+const r4 = n => Math.round(n * 1e4) / 1e4;
+
+function calcWeight(d) {
+  const mode = d.mode === 'hollow' ? 'hollow' : 'round';
+  const od = num(d.od), a = num(d.a), b = num(d.b), t = num(d.t), length = num(d.length), nos = whole(d.nos);
+  let ok = false, msg = '', eq = 0;
+  if (mode === 'round') {
+    eq = od;
+    const started = !!(od || t);
+    if (od && t) { if (t * 2 >= od) msg = 'Thickness must be less than half of the OD'; else ok = true; }
+    else msg = started ? 'Enter OD and Thickness' : 'Enter OD and Thickness - Kg/MTR appears instantly';
+  } else {
+    eq = (a + b) * EQ;
+    const started = !!(a || b || t);
+    if (a && b && t) { if (t * 2 >= eq) msg = 'Thickness is too large for this section'; else ok = true; }
+    else msg = started ? 'Enter Side A, Side B and Thickness' : 'Enter Side A and Side B - OD appears instantly';
+  }
+  const kg = ok ? (eq - t) * t * K : 0;
+  const wpp = ok && length ? kg * length : null;
+  const tot = ok && nos ? kg * (length || DEF_LEN) * nos : null;
+  return {
+    ok, message: msg, mode,
+    equivalent_od: mode === 'hollow' && a && b ? Math.round(eq * 100) / 100 : null,
+    _kg: kg,
+    kg_per_metre: r4(kg),
+    weight_per_pipe: wpp !== null ? r4(wpp) : null,
+    total_weight: tot !== null ? r4(tot) : null
+  };
+}
+
+function calcRate(d) {
+  const r = calcWeight({ mode: d.mode, od: d.od, a: d.a, b: d.b, t: d.t, length: 0, nos: 0 });
+  const rate = num(d.rate);
+  const rm = r.ok && rate ? r._kg * rate : null;
+  r.rate_per_metre = rm !== null ? r4(rm) : null;
+  r.rate_per_foot = rm !== null ? r4(rm / FT) : null;
+  return r;
+}
+
+const g = id => document.getElementById(id);
+const fmt = (n, d) => Number(n).toLocaleString('en-IN', { minimumFractionDigits: d, maximumFractionDigits: d });
+const rowsBox = g('wc-rows');
+const tpl = g('wc-row-tpl');
+const clean = v => v.replace(/,/g, '.').replace(/[^0-9.]/g, '').replace(/^(\d*\.\d*)\./, '$1');
+const digits = v => v.replace(/\D/g, '');
+
+function setRes(el, text, empty) {
+  el.textContent = text;
+  el.classList.toggle('empty', !!empty);
+}
+
+/* Picture follows the pipe type of the pipe you are working on. */
+function setHero(mode) {
+  const hollow = mode === 'hollow';
+  g('art-round').classList.toggle('off', hollow);
+  g('art-hollow').classList.toggle('off', !hollow);
+  g('hero-cap').textContent = hollow ? 'Hollow Section' : 'Round Pipe';
+}
+
+/* Table columns and headings follow the selected pipe type(s). */
+function updateView() {
+  const modes = new Set([...rowsBox.querySelectorAll('.f-mode')].map(m => m.value));
+  const view = modes.size > 1 ? 'mixed' : (modes.has('hollow') ? 'hollow' : 'round');
+  g('wc-tbl').dataset.view = view;
+  g('h-a').textContent = view === 'round' ? 'OD (mm) *' : view === 'hollow' ? 'Side A (mm) *' : 'OD / Side A (mm) *';
+  g('h-b').textContent = view === 'hollow' ? 'Side B (mm) *' : 'Side B (mm)';
+}
+
+function updateGrand() {
+  let sum = 0, pcs = 0;
+  rowsBox.querySelectorAll('.wc-data').forEach(r => { sum += r._total || 0; pcs += r._pcs || 0; });
+  g('wc-grand').textContent = fmt(sum, 2);
+  g('wc-gpcs').textContent = fmt(pcs, 0) + (pcs === 1 ? ' pipe' : ' pipes');
+}
+
+function addRow(focus, after) {
+  const row = tpl.content.firstElementChild.cloneNode(true);
+  const q = s => row.querySelector(s);
+  row._seq = 0; row._timer = 0; row._total = 0; row._pcs = 0;
+
+  const reset = (msg) => {
+    row._total = 0; row._pcs = 0;
+    setRes(q('.r-eq'), '—', true); setRes(q('.r-kgm'), '—', true); setRes(q('.r-wpp'), '—', true); setRes(q('.r-tot'), '—', true);
+    q('.wc-msg').textContent = msg || '';
+    updateGrand();
+  };
+
+  const applyMode = () => {
+    const hollow = q('.f-mode').value === 'hollow';
+    row.classList.toggle('is-round', !hollow);
+    q('.t-a').textContent = hollow ? 'Side A (mm)' : 'OD (mm)';
+    q('.f-a').placeholder = hollow ? 'e.g. 40' : 'e.g. 60';
+    const b = q('.f-b');
+    b.disabled = !hollow;
+    if (!hollow) b.value = '';
+    updateView();
+  };
+
+  const calc = () => {
+    const mySeq = ++row._seq;
+    const mode = q('.f-mode').value;
+    const a = q('.f-a').value;
+    const r = calcWeight({ mode, od: a, a, b: q('.f-b').value, t: q('.f-t').value, length: q('.f-l').value, nos: q('.f-n').value });
+    const showEq = () => {
+      if (mode === 'hollow' && r.equivalent_od) setRes(q('.r-eq'), fmt(r.equivalent_od, 2));
+      else setRes(q('.r-eq'), '\u2014', true);
+    };
+    if (!r.ok) { reset(/^Enter/.test(r.message) ? '' : r.message); showEq(); return; }
+
+    const hasTot = r.total_weight !== null && r.total_weight !== undefined;
+    row._total = hasTot ? Number(r.total_weight) : 0;
+    row._pcs = hasTot ? (parseInt(q('.f-n').value, 10) || 0) : 0;
+    showEq();
+    setRes(q('.r-kgm'), fmt(r.kg_per_metre, 3));
+    if (r.weight_per_pipe !== null && r.weight_per_pipe !== undefined) setRes(q('.r-wpp'), fmt(r.weight_per_pipe, 2));
+    else setRes(q('.r-wpp'), '—', true);
+    if (hasTot) setRes(q('.r-tot'), fmt(r.total_weight, 2));
+    else setRes(q('.r-tot'), '—', true);
+    q('.wc-msg').textContent = '';
+    updateGrand();
+  };
+
+  const live = calc;
+
+  row.querySelectorAll('input:not([type=hidden])').forEach(i => {
+    i.addEventListener('input', () => {
+      const v = i.classList.contains('f-n') ? digits(i.value) : clean(i.value);
+      if (v !== i.value) i.value = v;
+      live();
+    });
+    i.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); calc(); } });
+  });
+  row.addEventListener('focusin', () => setHero(q('.f-mode').value));
+  row.querySelectorAll('.wc-tog button').forEach(btn => btn.addEventListener('click', () => {
+    q('.f-mode').value = btn.dataset.v;
+    row.querySelectorAll('.wc-tog button').forEach(x => {
+      const on = x === btn; x.classList.toggle('is-on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    applyMode(); setHero(btn.dataset.v); calc();
+  }));
+  q('.b-add').addEventListener('click', () => addRow(true, row));
+  q('.b-del').addEventListener('click', () => {
+    row._seq++; row.remove();
+    if (!rowsBox.children.length) addRow(false);
+    const last = rowsBox.lastElementChild;
+    setHero(last ? last.querySelector('.f-mode').value : 'round');
+    updateView(); updateGrand();
+  });
+
+  if (after && after.parentNode === rowsBox) after.after(row); else rowsBox.appendChild(row);
+  applyMode();
+  setHero('round');
+  if (focus) {
+    try { q('.f-a').focus({ preventScroll: true }); } catch (e) {}
+    row.scrollIntoView({ block: 'nearest' });
+  }
+  return row;
+}
+
+g('wc-clr').onclick = () => {
+  rowsBox.querySelectorAll('.wc-data').forEach(r => { r._seq++; });
+  rowsBox.replaceChildren();
+  addRow(true);
+  updateView(); updateGrand();
+};
+
+addRow(false);
+updateGrand();
+
+/* ================= Rate tab =================
+   Kg/MTR x Rate/Kg => Rate/MTR ;  Rate/MTR / 3.281 => Rate/Foot   (all maths in app.py -> calc_rate) */
+const rtBox = g('rt-rows');
+const rtTpl = g('rt-row-tpl');
+
+function updateRateView() {
+  const modes = new Set([...rtBox.querySelectorAll('.f-mode')].map(m => m.value));
+  const view = modes.size > 1 ? 'mixed' : (modes.has('hollow') ? 'hollow' : 'round');
+  g('rt-tbl').dataset.view = view;
+  g('rh-a').textContent = view === 'round' ? 'OD (mm) *' : view === 'hollow' ? 'Side A (mm) *' : 'OD / Side A (mm) *';
+  g('rh-b').textContent = view === 'hollow' ? 'Side B (mm) *' : 'Side B (mm)';
+}
+
+function addRateRow(focus, after) {
+  const row = rtTpl.content.firstElementChild.cloneNode(true);
+  const q = s => row.querySelector(s);
+  row._seq = 0; row._timer = 0;
+
+  const reset = (msg) => {
+    ['.r-eq', '.r-kgm', '.r-rm', '.r-rf'].forEach(s => setRes(q(s), '\u2014', true));
+    q('.wc-msg').textContent = msg || '';
+  };
+
+  const applyMode = () => {
+    const hollow = q('.f-mode').value === 'hollow';
+    row.classList.toggle('is-round', !hollow);
+    q('.t-a').textContent = hollow ? 'Side A (mm)' : 'OD (mm)';
+    q('.f-a').placeholder = hollow ? 'e.g. 40' : 'e.g. 60';
+    const b = q('.f-b');
+    b.disabled = !hollow;
+    if (!hollow) b.value = '';
+    updateRateView();
+  };
+
+  const setMode = (v) => {
+    q('.f-mode').value = v;
+    row.querySelectorAll('.wc-tog button').forEach(x => {
+      const on = x.dataset.v === v; x.classList.toggle('is-on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    applyMode();
+  };
+
+  const calc = () => {
+    const mySeq = ++row._seq;
+    const mode = q('.f-mode').value;
+    const a = q('.f-a').value;
+    const r = calcRate({ mode, od: a, a, b: q('.f-b').value, t: q('.f-t').value, rate: q('.f-r').value });
+    const showEq = () => {
+      if (mode === 'hollow' && r.equivalent_od) setRes(q('.r-eq'), fmt(r.equivalent_od, 2));
+      else setRes(q('.r-eq'), '\u2014', true);
+    };
+    if (!r.ok) { reset(/^Enter/.test(r.message) ? '' : r.message); showEq(); return; }
+    showEq();
+    setRes(q('.r-kgm'), fmt(r.kg_per_metre, 3));
+    if (r.rate_per_metre !== null && r.rate_per_metre !== undefined) {
+      setRes(q('.r-rm'), fmt(r.rate_per_metre, 2));
+      setRes(q('.r-rf'), fmt(r.rate_per_foot, 2));
+    } else {
+      setRes(q('.r-rm'), '\u2014', true);
+      setRes(q('.r-rf'), '\u2014', true);
+    }
+    q('.wc-msg').textContent = '';
+  };
+
+  const live = calc;
+
+  row.querySelectorAll('input:not([type=hidden])').forEach(i => {
+    i.addEventListener('input', () => {
+      const v = clean(i.value);
+      if (v !== i.value) i.value = v;
+      live();
+    });
+    i.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); calc(); } });
+  });
+  row.addEventListener('focusin', () => setHero(q('.f-mode').value));
+  row.querySelectorAll('.wc-tog button').forEach(btn => btn.addEventListener('click', () => {
+    setMode(btn.dataset.v); setHero(btn.dataset.v); calc();
+  }));
+  /* used by the Weight -> Rate sync: fill pipe type / sizes from the Weight tab, then calculate */
+  row._fill = (d) => {
+    setMode(d.mode);
+    q('.f-a').value = d.a; q('.f-b').value = d.mode === 'hollow' ? d.b : ''; q('.f-t').value = d.t;
+    calc();
+  };
+  q('.b-add').addEventListener('click', () => addRateRow(true, row));
+  q('.b-del').addEventListener('click', () => {
+    if (row._src) row._src._dismissed = row._sig;   // do not bring this row back until the Weight data changes
+    row._seq++; row.remove();
+    if (!rtBox.children.length) addRateRow(false);
+    const last = rtBox.lastElementChild;
+    setHero(last ? last.querySelector('.f-mode').value : 'round');
+    updateRateView();
+  });
+
+  if (after && after.parentNode === rtBox) after.after(row); else rtBox.appendChild(row);
+  applyMode();
+  setHero('round');
+  if (focus) {
+    try { q('.f-a').focus({ preventScroll: true }); } catch (e) {}
+    row.scrollIntoView({ block: 'nearest' });
+  }
+  return row;
+}
+
+g('rt-clr').onclick = () => {
+  rtBox.querySelectorAll('.wc-data').forEach(r => { r._seq++; });
+  rtBox.replaceChildren();
+  addRateRow(true);
+  updateRateView();
+};
+
+addRateRow(false);
+
+/* ===== Weight tab -> Rate tab: pipe type, OD / Side A+B and Thickness are fetched automatically ===== */
+function syncRateFromWeight() {
+  const linked = [];
+  rowsBox.querySelectorAll('.wc-data').forEach(w => {
+    const d = {
+      mode: w.querySelector('.f-mode').value,
+      a: w.querySelector('.f-a').value,
+      b: w.querySelector('.f-b').value,
+      t: w.querySelector('.f-t').value
+    };
+    if (!(d.a || d.b || d.t)) return;                       // nothing typed in this weight row
+    const sig = JSON.stringify(d);
+    if (w._dismissed === sig) return;                       // user removed this row in the Rate tab
+    let r = [...rtBox.children].find(x => x._src === w);
+    if (!r) { r = addRateRow(false); r._src = w; r._sig = ''; }
+    if (r._sig !== sig) { r._fill(d); r._sig = sig; }       // Weight data changed -> refresh; otherwise keep Rate-tab edits
+    linked.push(r);
+  });
+  // drop rate rows whose weight row was removed / cleared
+  [...rtBox.children].forEach(r => { if (r._src && !linked.includes(r)) { r._seq++; r.remove(); } });
+  if (linked.length) {
+    // remove the untouched blank starter row, then keep fetched rows on top in Weight-tab order
+    [...rtBox.children].forEach(r => {
+      if (!r._src && !['.f-a', '.f-b', '.f-t', '.f-r'].some(s => r.querySelector(s).value)) { r._seq++; r.remove(); }
+    });
+    linked.slice().reverse().forEach(r => rtBox.prepend(r));
+  }
+  if (!rtBox.children.length) addRateRow(false);
+  updateRateView();
+  return linked;
+}
+
+/* ================= Tab switch (top right) ================= */
+function showTab(name) {
+  const rate = name === 'rate';
+  g('view-weight').hidden = rate;
+  g('view-rate').hidden = !rate;
+  document.querySelectorAll('.tabs button').forEach(b => {
+    const on = b.dataset.tab === name;
+    b.classList.toggle('is-on', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  const title = rate ? 'Pipe Rate Calculator' : 'Pipe Weight Calculator';
+  g('ttl-h1').textContent = title;
+  document.title = title;
+  if (rate) {
+    const linked = syncRateFromWeight();
+    const next = linked && linked.find(r => !r.querySelector('.f-r').value);   // first fetched row still waiting for Rate / Kg
+    if (next) { try { next.querySelector('.f-r').focus({ preventScroll: true }); } catch (e) {} }
+  }
+  const last = (rate ? rtBox : rowsBox).lastElementChild;
+  setHero(last ? last.querySelector('.f-mode').value : 'round');
+}
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));</script>
+</body>
+</html>

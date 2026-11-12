@@ -24,9 +24,12 @@ Rate tab (see calc_rate below):
     Rate/MTR / 3.281  => Rate/Foot
 """
 import os
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, send_from_directory, request, jsonify
 
-app = Flask(__name__)
+# The whole page (HTML + CSS + JS) is one file: public/index.html.
+# Calculation runs in the browser for instant results; the /api routes below are kept as a backup.
+app = Flask(__name__, static_folder=None)
+PUBLIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public")
 
 # ---- constants from the formula sheet ----
 K = 0.0246615          # weight constant (mild steel)
@@ -126,15 +129,15 @@ def calc_rate(mode, od, a, b, t, rate_kg):
 
 @app.after_request
 def no_cache(resp):
-    # always fetch fresh HTML/CSS/JS so UI updates show up immediately
-    if request.path == "/" or request.path.startswith("/static/"):
-        resp.headers["Cache-Control"] = "no-cache, must-revalidate"
+    # browser keeps a copy but re-checks (ETag) so updates still show up; unchanged page = tiny 304 reply
+    if request.path == "/":
+        resp.headers["Cache-Control"] = "no-cache"
     return resp
 
 
 @app.get("/")
 def index():
-    return render_template("index.html")
+    return send_from_directory(PUBLIC, "index.html")
 
 
 @app.post("/api/calculate")

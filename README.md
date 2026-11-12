@@ -2,8 +2,8 @@
 
 A small Flask web app for **Shreeji SteelTubes Pvt. Ltd.** that calculates
 pipe weight for **Round Pipes** and **Hollow Sections (SHS/RHS)**. All
-calculations run on the server in Python (`app.py` -> `calc_weight()`); the
-browser only sends the numbers and shows the result.
+calculations run instantly in the browser (`public/index.html`); `app.py` keeps the same
+formulas as a backup API (`/api/calculate`, `/api/rate`).
 
 ## Features
 - Round Pipe and Hollow Section modes (tap to switch)
@@ -53,11 +53,8 @@ Free instances sleep when idle, so the first request after a while can take ~30 
 ├── requirements.txt   Flask, gunicorn
 ├── render.yaml        Render blueprint
 ├── Procfile            start command (gunicorn)
-├── templates/
-│   └── index.html     page markup
-└── static/
-    ├── style.css      styling and animated background
-    └── script.js      reads inputs, calls the API, shows results
+└── public/
+    └── index.html     whole page (HTML + CSS + JS in one file, calculation runs in the browser)
 ```
 
 ## API
@@ -90,3 +87,8 @@ returns
 - Add **Rate / Kg** -> **Rate / MTR** = Kg/MTR x Rate/Kg, and **Rate / Foot** = Rate/MTR / 3.281
 - Maths lives in `app.py -> calc_rate()`, endpoint `POST /api/rate`
 - Data typed in the Weight tab (pipe type, OD / Side A+B, Thickness) is fetched into the Rate tab automatically; just enter Rate / Kg
+
+## Zero loading screen on Render
+The "service is waking up" screen on the first visit is Render's free web service waking from sleep.
+Because the page no longer needs the server to calculate, deploy it as a **Static Site** (never sleeps, served from CDN):
+Render -> New + -> Static Site -> pick this repo -> Build Command: *(empty)* -> Publish Directory: `public`.
